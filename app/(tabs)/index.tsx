@@ -176,7 +176,7 @@ export default function HomeScreen() {
               width: "80%",
             }}
           >
-            <Text style={{ fontSize: 18, marginBottom: 10 }}>
+            <Text style={{ fontSize: 18, marginBottom: 10, color: "blue" }}>
               {editId ? "Edit Product" : "Add Product"}
             </Text>
             <TextInput
@@ -217,8 +217,8 @@ export default function HomeScreen() {
             }}
           >
             <View>
-              <Text>Product: {item.product}</Text>
-              <Text>Date: {item.date}</Text>
+              <Text style={{ color: "blue" }}>Product: {item.product}</Text>
+              <Text style={{ color: "blue" }}>Date: {item.date}</Text>
             </View>
             <View style={{ flexDirection: "row" }}>
               <TouchableOpacity
