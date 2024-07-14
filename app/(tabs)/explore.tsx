@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, StatusBar } from "react-native";
 export default function TabTwoScreen() {
   return (
     <View style={styles.mainContainer}>
-      <Text>Explore</Text>
+      <Text style={{ color: "#fff" }}>Incoming</Text>
     </View>
   );
 }
