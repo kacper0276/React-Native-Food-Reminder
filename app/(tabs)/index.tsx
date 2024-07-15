@@ -9,6 +9,7 @@ import {
   Modal,
   StyleSheet,
   StatusBar,
+  useColorScheme,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
@@ -18,6 +19,7 @@ type ProductData = {
   id: string;
   product: string;
   date: string;
+  notificationIds: string[];
 };
 
 Notifications.setNotificationHandler({
@@ -34,6 +36,7 @@ export default function HomeScreen() {
   const [data, setData] = useState<ProductData[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>("");
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     loadData();
@@ -41,20 +44,16 @@ export default function HomeScreen() {
   }, []);
 
   const requestPermissions = async () => {
-    if (Device.isDevice) {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== "granted") {
-        alert("Failed to get push token for push notification!");
-        return;
-      }
-    } else {
-      alert("Must use physical device for Push Notifications");
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
+      return;
     }
   };
 
@@ -64,10 +63,13 @@ export default function HomeScreen() {
       return;
     }
 
+    const notificationIds = await scheduleNotifications(product, date);
+
     const newProduct: ProductData = {
       id: String(Date.now()),
       product,
       date,
+      notificationIds,
     };
 
     const newData: ProductData[] = [...data, newProduct];
@@ -76,7 +78,6 @@ export default function HomeScreen() {
     setProduct("");
     setDate("");
     setModalVisible(false);
-    scheduleNotification(product, date);
   };
 
   const loadData = async () => {
@@ -86,25 +87,50 @@ export default function HomeScreen() {
     }
   };
 
-  const scheduleNotification = async (
+  const scheduleNotifications = async (
     productName: string,
     notificationDate: string
   ) => {
-    const triggerDate = new Date(notificationDate);
-    triggerDate.setDate(triggerDate.getDate() - 1);
+    const notificationIds = [];
 
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Product Reminder",
-        body: `Reminder for ${productName} due on ${notificationDate}`,
-      },
-      trigger: {
-        date: triggerDate,
-      },
-    });
+    const startDate = new Date(notificationDate);
+    startDate.setDate(startDate.getDate() - 1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(notificationDate);
+    endDate.setHours(23, 59, 59, 999);
+
+    const totalHours =
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+
+    for (let i = 0; i <= totalHours; i += 8) {
+      const triggerDate = new Date(startDate);
+      triggerDate.setHours(startDate.getHours() + i);
+
+      if (triggerDate > new Date()) {
+        const notificationId = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Product Reminder",
+            body: `Reminder for ${productName}`,
+          },
+          trigger: triggerDate,
+        });
+
+        notificationIds.push(notificationId);
+      }
+    }
+
+    return notificationIds;
   };
 
   const handleDelete = async (id: string) => {
+    const productToDelete = data.find((item) => item.id === id);
+    if (productToDelete) {
+      for (const notificationId of productToDelete.notificationIds) {
+        await Notifications.cancelScheduledNotificationAsync(notificationId);
+      }
+    }
+
     const filteredData = data.filter((item) => item.id !== id);
     setData(filteredData);
     await AsyncStorage.setItem("data", JSON.stringify(filteredData));
@@ -150,6 +176,8 @@ export default function HomeScreen() {
     setEditId("");
     setModalVisible(true);
   };
+
+  const textColor = colorScheme === "dark" ? "white" : "black";
 
   return (
     <View style={styles.mainContainer}>
@@ -217,8 +245,8 @@ export default function HomeScreen() {
             }}
           >
             <View>
-              <Text style={{ color: "blue" }}>Product: {item.product}</Text>
-              <Text style={{ color: "blue" }}>Date: {item.date}</Text>
+              <Text style={{ color: textColor }}>Product: {item.product}</Text>
+              <Text style={{ color: textColor }}>Date: {item.date}</Text>
             </View>
             <View style={{ flexDirection: "row" }}>
               <TouchableOpacity
