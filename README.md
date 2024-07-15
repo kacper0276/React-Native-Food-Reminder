@@ -29,14 +29,14 @@ In the output, you'll find options to open the app in a
 An application written in React-Native, used to send reminders about various things, with data saved in the device's memory. Notifications are sent a day before. In the future, a configuration will be available to set the frequency of notification
 
 <p align="center">
-  <img alt="Main Page" [Screenshot] src="./screenshots/MainView.png"><br>
+  <img alt="Main Page" [Screenshot] src="./screenshots/MainView.png" style="width:400px; height:800px"><br>
 Main page
 </p>
 <p align="center">
-  <img alt="School subpage" [Screenshot] src="./screenshots/AddProduct.png"><br>
+  <img alt="School subpage" [Screenshot] src="./screenshots/AddProduct.png" style="width:400px; height:800px"><br>
   Add product
 </p>
 <p align="center">
-  <img alt="Map page" [Screenshot] src="./screenshots/EditProduct.png"><br>
+  <img alt="Map page" [Screenshot] src="./screenshots/EditProduct.png" style="width:400px; height:800px"><br>
 EditProduct
 </p>
