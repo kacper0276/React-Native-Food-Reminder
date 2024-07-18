@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 type ProductData = {
   id: string;
@@ -37,6 +37,7 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>("");
   const colorScheme = useColorScheme();
+  const tabBarHeight = useBottomTabBarHeight();
 
   useEffect(() => {
     loadData();
@@ -180,7 +181,7 @@ export default function HomeScreen() {
   const textColor = colorScheme === "dark" ? "white" : "black";
 
   return (
-    <View style={styles.mainContainer}>
+    <View style={[styles.mainContainer, { paddingBottom: tabBarHeight }]}>
       <Button title="Add Product" onPress={showAddModal} />
       <Modal
         animationType="slide"
